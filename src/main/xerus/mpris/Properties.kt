@@ -3,7 +3,7 @@ package xerus.mpris
 import org.freedesktop.dbus.Variant
 import java.util.HashMap
 
-class PropertyMap(initial: PropertyMap.() -> Unit): HashMap<String, Variant<*>>() {
+class PropertyMap @JvmOverloads constructor(initial: PropertyMap.() -> Unit = {}): HashMap<String, Variant<*>>() {
 
     init {
         initial(this)

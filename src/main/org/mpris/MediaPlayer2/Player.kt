@@ -1,30 +1,29 @@
 @file: Suppress("UNUSED")
 package org.mpris.MediaPlayer2
 
-import org.freedesktop.DBus
 import org.freedesktop.dbus.DBusInterface
 import org.freedesktop.dbus.DBusInterfaceName
 import org.freedesktop.dbus.DBusSignal
-import org.freedesktop.dbus.Variant
 
-interface DefaultDBus: DBus.Properties {
-    override fun isRemote() = false
-    @Suppress("UNCHECKED_CAST")
-    override fun <A: Any?> Get(interface_name: String, property_name: String): A {
-        return GetAll(interface_name)[property_name]?.value as A
-    }
-    override fun <A: Any?> Set(interface_name: String, property_name: String, value: A) {
-        GetAll(interface_name).put(property_name, Variant(value))
-    }
-}
-
-@DBusInterfaceName("org.mpris.MediaPlayer2")
-interface MediaPlayer2: DBusInterface {
-    fun Raise()
-    fun Quit()
-}
-
-@DBusInterfaceName("org.mpris.MediaPlayer2.Player")
+/** [https://specifications.freedesktop.org/mpris-spec/latest/Player_Interface.html]
+ *
+ * ## Properties
+ * - PlaybackStatus	s (Playback_Status) 	Read only
+ * - LoopStatus		s (Loop_Status)	        Read/Write	(optional)
+ * - Rate		    d (Playback_Rate)	    Read/Write
+ * - Shuffle		b	                    Read/Write	(optional)
+ * - Metadata		a{sv} (Metadata_Map)	Read only
+ * - Volume		    d (Volume)	            Read/Write
+ * - Position		x (Time_In_Us)	        Read only
+ * - MinimumRate	d (Playback_Rate)	    Read only
+ * - MaximumRate	d (Playback_Rate)	    Read only
+ * - CanGoNext		b	                    Read only
+ * - CanGoPrevious	b	                    Read only
+ * - CanPlay		b	                    Read only
+ * - CanPause		b	                    Read only
+ * - CanSeek		b	                    Read only
+ * - CanControl		b	                    Read only
+ * */
 interface Player: DBusInterface {
     class Seeked(path: String, val position: Long): DBusSignal(path, position)
 
@@ -40,4 +39,8 @@ interface Player: DBusInterface {
 
 enum class PlaybackStatus {
     Playing, Paused, Stopped
+}
+
+enum class LoopStatus {
+    None, Track, Playlist
 }

@@ -4,10 +4,12 @@ import org.freedesktop.DBus.Properties.PropertiesChanged
 import org.freedesktop.dbus.DBusConnection
 import org.freedesktop.dbus.Variant
 import org.freedesktop.dbus.types.DBusMapType
-import org.mpris.MediaPlayer2.DefaultDBus
+import org.mpris.MediaPlayer2.LoopStatus
+import org.mpris.MediaPlayer2.MaybePlaylist
 import org.mpris.MediaPlayer2.MediaPlayer2
 import org.mpris.MediaPlayer2.PlaybackStatus
 import org.mpris.MediaPlayer2.Player
+import org.mpris.MediaPlayer2.PlaylistOrdering
 import java.util.Collections
 import java.util.HashMap
 
@@ -40,24 +42,24 @@ class MPRISPlayer : MediaPlayer2, Player, DefaultDBus {
             put("Identity", "PlayerFX")
             put("SupportedUriSchemes", arrayOf("file"))
             put("SupportedMimeTypes", arrayOf("audio/mpeg", "audio/mp4"))
-            //properties["DesktopEntry"]
+            //put("DesktopEntry")
         }
 
         // Player
         properties["org.mpris.MediaPlayer2.Player"] = PropertyMap {
             put("PlaybackStatus", status)
-            put("LoopStatus", "None")
+            put("LoopStatus", LoopStatus.None)
             put("Rate", 1.0)
             put("Shuffle", false)
             put("Metadata", Variant(
                     PropertyMap {
-                        put("mpris:trackid", "/song/1")
+                        put("mpris:trackid", "/playerfx/songs/untiltheend")
                         put("mpris:length", 10_000000)
                         put("mpris:artUrl", "file:///home/janek/Daten/Musik/Monstercat/Aero Chord - Love & Hate EP/cover.jpeg")
                         put("xesam:artist", arrayOf("Aero Chord", "Fractal"))
                         put("xesam:title", "Until The End (feat. Q'AILA)")
                     },
-                    DBusMapType(Class.forName("java.lang.String"), Class.forName("org.freedesktop.dbus.Variant"))))
+                    DBusMapType(String::class.java, Variant::class.java)))
             put("Volume", 1.0)
             put("Position", 0)
             put("MinimumRate", 1.0)
@@ -70,20 +72,18 @@ class MPRISPlayer : MediaPlayer2, Player, DefaultDBus {
             put("CanControl", true)
         }
 
-        // Playlist
-        /*properties["PlaylistCount"] = Variant()
-        // 	u	Read only
-        properties["Orderings"] = Variant()
-        // 	as (Playlist_Ordering_List)	Read only
-        properties["ActivePlaylist"] = Variant()
-        // 	(b(oss)) (Maybe_Playlist)	Read only
-        */
+        // Playlists
+        properties["org.mpris.MediaPlayer2.Playlists"] = PropertyMap {
+            put("PlaylistCount", 0)
+            put("Orderings", PlaylistOrdering.Alphabetical)
+            put("ActivePlaylist", MaybePlaylist())
+        }
 
         // TrackList
-        /*properties["Tracks"] = Variant()
-        // 	ao (Track_Id_List)	Read only
-        properties["CanEditTracks"] = Variant()
-        // 	b	Read only*/
+        properties["org.mpris.MediaPlayer2.TrackList"] = PropertyMap {
+            put("Tracks", arrayOf("/playerfx/songs/untiltheend", "/playerfx/songs/borneo"))
+            put("CanEditTracks", false)
+        }
         println("MPRISPlayer constructed")
     }
 
