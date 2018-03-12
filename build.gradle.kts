@@ -4,9 +4,30 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Date
 
 plugins {
-    application
     kotlin("jvm") version "1.2.21"
     id("com.jfrog.bintray") version "1.8.0"
+}
+
+java.sourceSets["main"].java.srcDir("src/main")
+
+allprojects {
+    group = "xerus.mpris"
+    buildDir = rootDir.resolve("build")
+
+    repositories {
+        jcenter()
+    }
+
+}
+
+val kotlinVersion: String? by extra {
+    buildscript.configurations["classpath"].resolvedConfiguration.firstLevelModuleDependencies
+            .find { it.moduleName == "org.jetbrains.kotlin.jvm.gradle.plugin" }?.moduleVersion
+}
+
+dependencies {
+    compile("com.github.hypfvieh", "dbus-java", "2.7.4")
+    compile("org.jetbrains.kotlin", "kotlin-runtime", kotlinVersion)
 }
 
 bintray {
@@ -15,7 +36,7 @@ bintray {
 
     pkg(closureOf<BintrayExtension.PackageConfig>{
         repo = "mpris-java"
-        name = "mpris-java"
+        name = "mpris"
         version = VersionConfig().apply {
             name = "0.1"
             released = Date().toString()
@@ -46,29 +67,6 @@ bintray {
     licenseName = 'The Apache Software License, Version 2.0'
     licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
     allLicenses = ["Apache-2.0"]*/
-}
-
-java.sourceSets["main"].java.srcDir("src/main")
-java.sourceSets["test"].java.srcDir("src/test")
-
-group = "xerus.mpris"
-
-val kotlinVersion: String? by extra {
-    buildscript.configurations["classpath"].resolvedConfiguration.firstLevelModuleDependencies
-            .find { it.moduleName == "org.jetbrains.kotlin.jvm.gradle.plugin" }?.moduleVersion
-}
-
-application {
-    mainClassName = "xerus.mpris.MPRISPlayerKt"
-}
-
-repositories {
-    jcenter()
-}
-
-dependencies {
-    compile("com.github.hypfvieh", "dbus-java", "2.7.4")
-    compile("org.jetbrains.kotlin", "kotlin-runtime", kotlinVersion)
 }
 
 tasks {

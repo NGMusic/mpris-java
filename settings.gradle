@@ -1,1 +1,11 @@
-rootProject.name = "mpris-java"
+
+rootProject.name = "mpris"
+rootProject.buildFileName = "build.gradle.kts"
+
+include ":mpris-extensions"
+project(":mpris-extensions").projectDir = file("src/extensions")
+
+rootProject.children.each { project ->
+	if(project.name == "mpris-extensions")
+		project.buildFileName = "../../extensions.gradle.kts"
+}

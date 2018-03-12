@@ -41,9 +41,14 @@ class MaybePlaylist(@field:Position(0)
 }
 
 enum class PlaylistOrdering {
-    Alphabetical, //Alphabetical ordering by name, ascending.
-    Created,      //Ordering by creation date, oldest first.
-    Modified,     //Ordering by last modified date, oldest first.
-    Played,       //Ordering by date of last playback, oldest first.
-    User          //A user-defined ordering.
+    /**Alphabetical ordering by name, ascending.*/
+    Alphabetical,
+    /**Ordering by creation date, oldest first.*/
+    Created,
+    /**Ordering by last modified date, oldest first.*/
+    Modified,
+    /**Ordering by date of last playback, oldest first.*/
+    Played,
+    /**A user-defined ordering.*/
+    User
 }
