@@ -22,8 +22,8 @@ interface TrackList: DBusInterface {
      * @param CurrentTrack The identifier of the track to be considered as current.
      * `/org/mpris/MediaPlayer2/TrackList/NoTrack` indicates that there is no current track. */
     class TrackListReplaced(path: String,
-                            val Tracks: List<String>,
-                            val CurrentTrack: String): DBusSignal(path, Tracks, CurrentTrack)
+                            Tracks: List<String>,
+                            CurrentTrack: String): DBusSignal(path, Tracks, CurrentTrack)
 
     /** Indicates that a track has been added to the track list.
      *
@@ -32,15 +32,15 @@ interface TrackList: DBusInterface {
      * @param AfterTrack The identifier of the track after which the new track was inserted.
      * The path `/org/mpris/MediaPlayer2/TrackList/NoTrack` indicates that the track was inserted at the start of the track list. */
     class TrackAdded(path: String,
-                     val Metadata: Map<String, Variant<*>>,
-                     val AfterTrack: String): DBusSignal(path, Metadata, AfterTrack)
+                     Metadata: Map<String, Variant<*>>,
+                     AfterTrack: String): DBusSignal(path, Metadata, AfterTrack)
 
     /** Indicates that a track has been removed from the track list.
      *
      * @param path The path to the object this is emitted from.
      * @param TrackId The identifier of the track being removed. */
     class TrackRemoved(path: String,
-                       val TrackId: String): DBusSignal(path, TrackId)
+                       TrackId: String): DBusSignal(path, TrackId)
 
     /** Indicates that the metadata of a track in the tracklist has changed.
      *
@@ -50,8 +50,8 @@ interface TrackList: DBusInterface {
      * @param TrackId The id of the track which metadata has changed. If the track id has changed, this will be the old value.
      * @param Metadata metadata of the new track. This must include a mpris:trackid entry. */
     class TrackMetadataChanged(path: String,
-                               val TrackId: String,
-                               val Metadata: Map<String, Variant<*>>): DBusSignal(path, TrackId, Metadata)
+                               TrackId: String,
+                               Metadata: Map<String, Variant<*>>): DBusSignal(path, TrackId, Metadata)
 
     fun GetTracksMetadata(TrackIds: List<String>): List<Map<String, Variant<*>>>
 

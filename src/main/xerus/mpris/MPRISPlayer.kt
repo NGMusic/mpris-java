@@ -4,12 +4,7 @@ import org.freedesktop.DBus.Properties.PropertiesChanged
 import org.freedesktop.dbus.DBusConnection
 import org.freedesktop.dbus.Variant
 import org.freedesktop.dbus.types.DBusMapType
-import org.mpris.MediaPlayer2.LoopStatus
-import org.mpris.MediaPlayer2.MaybePlaylist
-import org.mpris.MediaPlayer2.MediaPlayer2
-import org.mpris.MediaPlayer2.PlaybackStatus
-import org.mpris.MediaPlayer2.Player
-import org.mpris.MediaPlayer2.PlaylistOrdering
+import org.mpris.MediaPlayer2.*
 import java.util.Collections
 import java.util.HashMap
 
@@ -24,9 +19,17 @@ fun main(args: Array<String>) {
     conn.exportObject("/org/mpris/MediaPlayer2", MPRISPlayer())
 }
 
-class MPRISPlayer : MediaPlayer2, Player, DefaultDBus {
+class MPRISPlayer : MediaPlayer2, DBusPlayer, DefaultDBus {
 
     val properties = HashMap<String, PropertyMap>()
+
+    var currentTrack = SimpleTrack {
+        put("mpris:trackid", "/playerfx/songs/untiltheend")
+        put("mpris:length", 10_000000)
+        put("mpris:artUrl", "file:///home/janek/Daten/Musik/Monstercat/Aero Chord - Love & Hate EP/cover.jpeg")
+        put("xesam:artist", arrayOf("Aero Chord", "Fractal"))
+        put("xesam:title", "Until The End (feat. Q'AILA)")
+    }
 
     var status = PlaybackStatus.Stopped
 
@@ -34,7 +37,6 @@ class MPRISPlayer : MediaPlayer2, Player, DefaultDBus {
         println("Constructing MPRISPlayer")
         // MediaPlayer2
         properties["org.mpris.MediaPlayer2"] = PropertyMap {
-            put("CanSeek", true)
             put("CanSeek", true)
             put("CanQuit", true)
             put("CanRaise", false)
@@ -51,15 +53,8 @@ class MPRISPlayer : MediaPlayer2, Player, DefaultDBus {
             put("LoopStatus", LoopStatus.None)
             put("Rate", 1.0)
             put("Shuffle", false)
-            put("Metadata", Variant(
-                    PropertyMap {
-                        put("mpris:trackid", "/playerfx/songs/untiltheend")
-                        put("mpris:length", 10_000000)
-                        put("mpris:artUrl", "file:///home/janek/Daten/Musik/Monstercat/Aero Chord - Love & Hate EP/cover.jpeg")
-                        put("xesam:artist", arrayOf("Aero Chord", "Fractal"))
-                        put("xesam:title", "Until The End (feat. Q'AILA)")
-                    },
-                    DBusMapType(String::class.java, Variant::class.java)))
+            // https://www.freedesktop.org/wiki/Specifications/mpris-spec/metadata/#index2h2
+            put("Metadata", Variant(currentTrack.metadata, DBusMapType(String::class.java, Variant::class.java)))
             put("Volume", 1.0)
             put("Position", 0)
             put("MinimumRate", 1.0)
@@ -87,7 +82,7 @@ class MPRISPlayer : MediaPlayer2, Player, DefaultDBus {
         println("MPRISPlayer constructed")
     }
 
-    override fun GetAll(interface_name: String): Map<String, Variant<*>> = properties[interface_name]!!
+    override fun GetAll(interface_name: String) = properties[interface_name]
 
     fun <A: Any> updateProperty(interface_name: String, name: String, value: A) {
         println("Updating $name of $interface_name to $value")

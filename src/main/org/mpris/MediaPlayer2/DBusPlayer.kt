@@ -24,8 +24,9 @@ import org.freedesktop.dbus.DBusSignal
  * - CanSeek		b	                    Read only
  * - CanControl		b	                    Read only
  * */
-interface Player: DBusInterface {
-    class Seeked(path: String, val position: Long): DBusSignal(path, position)
+@DBusInterfaceName("org.mpris.MediaPlayer2.Player")
+interface DBusPlayer: DBusInterface {
+    class Seeked(path: String, position: Long): DBusSignal(path, position)
 
     fun Next()
     fun Previous()

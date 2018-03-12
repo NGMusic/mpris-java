@@ -16,7 +16,8 @@ import org.freedesktop.dbus.UInt32
  * - ActivePlaylist		(b(oss)) (Maybe_Playlist)	Read only
  * */
 interface Playlists: DBusInterface {
-    class PlaylistChanged(path: String, val playlist: Playlist): DBusSignal(path, playlist)
+    class PlaylistChanged(path: String, playlist: Playlist): DBusSignal(path, playlist)
+
     fun ActivatePlaylist(playlist_id: DBusInterface)
     fun GetPlaylists(index: UInt32, max_count: UInt32, order: String, reverse_order: Boolean): List<Playlist>
 }
@@ -35,6 +36,7 @@ class MaybePlaylist(@field:Position(0)
                     val playlist: Playlist): Struct() {
     /** Creates an empty MaybePlaylist */
     constructor() : this(false, Playlist("/", ""))
+    /** Creates a valid MaybePlaylist containing the Playlist */
     constructor(playlist: Playlist) : this(true, playlist)
 }
 

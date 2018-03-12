@@ -1,10 +1,6 @@
 # mpris-java
-Simple MPRIS 2 implementation with Kotlin for Java
 
-This is not done, but usable. No guarantees whatsoever.
+Simple MPRIS 2 implementation with Kotlin for Java. 
+Code is mainly done, but largely untested. No guarantees for it to work.
 
 Look into xerus.mpris.MPRISPlayer for a test implementation.
-
-### Todo
-- TrackList
-- better Properties integration
