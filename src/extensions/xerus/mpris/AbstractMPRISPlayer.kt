@@ -4,14 +4,13 @@ import org.freedesktop.dbus.Variant
 import org.mpris.MediaPlayer2.DBusPlayer
 import org.mpris.MediaPlayer2.MediaPlayer2
 
-/*
 abstract class AbstractMPRISPlayer: MediaPlayer2, DBusPlayer {
 
     override fun isRemote() = false
 
-    val properties = HashMap<String, PropertyMap>
+    val properties = HashMap<String, MutableMap<String, Variant<*>>>()
 
-    override fun <A> Get(interface_name: String, property_name: String): A {
+    /*override fun <A> Get(interface_name: String, property_name: String): A {
         return super.Get(interface_name, property_name)
     }
 
@@ -21,7 +20,8 @@ abstract class AbstractMPRISPlayer: MediaPlayer2, DBusPlayer {
 
     override fun GetAll(interface_name: String): Map<String, Variant<*>> {
 
-    }
+    }*/
+
 
     abstract val PlaybackStatus: String
     abstract var LoopStatus: String?
@@ -50,4 +50,4 @@ abstract class AbstractMPRISPlayer: MediaPlayer2, DBusPlayer {
     abstract val SupportedUriSchemes: Array<String>
     abstract val SupportedMimeTypes: Array<String>
 
-}*/
+}
