@@ -8,7 +8,7 @@ plugins {
     id("com.jfrog.bintray") version "1.8.0"
 }
 
-java.sourceSets["main"].java.srcDir("src/main")
+java.sourceSets["main"].java.srcDir("src")
 
 allprojects {
     group = "xerus.mpris"
