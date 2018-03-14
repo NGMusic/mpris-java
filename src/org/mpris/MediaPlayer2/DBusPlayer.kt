@@ -1,6 +1,7 @@
 @file: Suppress("UNUSED")
 package org.mpris.MediaPlayer2
 
+import org.freedesktop.DBus
 import org.freedesktop.dbus.DBusInterface
 import org.freedesktop.dbus.DBusInterfaceName
 import org.freedesktop.dbus.DBusSignal
@@ -25,8 +26,8 @@ import org.freedesktop.dbus.DBusSignal
  * - CanControl		b	                    Read only
  * */
 @DBusInterfaceName("org.mpris.MediaPlayer2.Player")
-interface DBusPlayer: DBusInterface {
-    class Seeked(path: String, position: Long): DBusSignal(path, position)
+interface Player: DBusInterface {
+    class Seeked(path: DBusPath, position: Long): DBusSignal(path, position)
 
     fun Next()
     fun Previous()
@@ -38,10 +39,13 @@ interface DBusPlayer: DBusInterface {
     fun OpenUri(uri: String)
 }
 
-enum class PlaybackStatus {
-    Playing, Paused, Stopped
+enum class PlaybackStatus: CharSequence by this.toString() {
+    Playing, Paused, Stopped;
+
+    /** returns [Playing], unless this == Playing, then returns [Paused] */
+    fun playPause() = if(this === Playing) Paused else Playing
 }
 
-enum class LoopStatus {
+enum class LoopStatus: CharSequence by this.toString() {
     None, Track, Playlist
 }

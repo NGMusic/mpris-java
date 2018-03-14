@@ -8,30 +8,71 @@ import org.mpris.MediaPlayer2.*
 import java.util.Collections
 import java.util.HashMap
 
-val conn = DBusConnection.getConnection(DBusConnection.SESSION)
-
 fun println(obj: String) = System.out.println(obj)
 operator fun <K, V> HashMap<K, V>.set(k: K, value: V)  = put(k, value)
 
+
 fun main(args: Array<String>) {
     println("Connecting to DBus")
-    conn.requestBusName("org.mpris.MediaPlayer2.PlayerFX")
-    conn.exportObject("/org/mpris/MediaPlayer2", MPRISPlayer())
+    MPRISPlayer().exportAs("TestPlayer")
 }
 
-class MPRISPlayer : MediaPlayer2, DBusPlayer, DefaultDBus {
+class MPRISPlayer : AbstractMPRISPlayer() {
 
-    val properties = HashMap<String, PropertyMap>()
-
-    var currentTrack = SimpleTrack {
+    override var playbackStatus by DBusProperty(PlaybackStatus.Stopped)
+    override var loopStatus: LoopStatus? = null
+    override var rate by DBusProperty(1.0)
+    override var shuffle: Boolean? = null
+    override val metadata by DBusProperty(PropertyMap {
         put("mpris:trackid", "/playerfx/songs/untiltheend")
         put("mpris:length", 10_000000)
         put("mpris:artUrl", "file:///home/janek/Daten/Musik/Monstercat/Aero Chord - Love & Hate EP/cover.jpeg")
         put("xesam:artist", arrayOf("Aero Chord", "Fractal"))
         put("xesam:title", "Until The End (feat. Q'AILA)")
-    }
+    })
+    override var volume: Double
+        get() = TODO("not implemented")
+        set(value) {}
+    override val position: Long
+        get() = TODO("not implemented")
+    override val minimumRate: Double
+        get() = TODO("not implemented")
+    override val maximumRate: Double
+        get() = TODO("not implemented")
+    override val canGoNext: Boolean
+        get() = TODO("not implemented")
+    override val canGoPrevious: Boolean
+        get() = TODO("not implemented")
+    override val canPlay: Boolean
+        get() = TODO("not implemented")
+    override val canPause: Boolean
+        get() = TODO("not implemented")
+    override val canSeek: Boolean
+        get() = TODO("not implemented")
+    override val canControl: Boolean
+        get() = TODO("not implemented")
+    override val canQuit: Boolean
+        get() = TODO("not implemented")
+    override var fullscreen: Boolean?
+        get() = TODO("not implemented")
+        set(value) {}
+    override val canSetFullscreen: Boolean?
+        get() = TODO("not implemented")
+    override val canRaise: Boolean
+        get() = TODO("not implemented")
+    override val hasTrackList: Boolean
+        get() = TODO("not implemented")
+    override val identity: String
+        get() = TODO("not implemented")
+    override val desktopEntry: String?
+        get() = TODO("not implemented")
+    override val supportedUriSchemes: Array<String>
+        get() = TODO("not implemented")
+    override val supportedMimeTypes: Array<String>
+        get() = TODO("not implemented")
 
-    var status = PlaybackStatus.Stopped
+    var currentTrack = SimpleTrack {
+    }
 
     init {
         println("Constructing MPRISPlayer")
@@ -49,11 +90,10 @@ class MPRISPlayer : MediaPlayer2, DBusPlayer, DefaultDBus {
 
         // Player
         properties["org.mpris.MediaPlayer2.Player"] = PropertyMap {
-            put("PlaybackStatus", status)
+            put("PlaybackStatus", PlaybackStatus.Stopped)
             put("LoopStatus", LoopStatus.None)
             put("Rate", 1.0)
             put("Shuffle", false)
-            // https://www.freedesktop.org/wiki/Specifications/mpris-spec/metadata/#index2h2
             put("Metadata", Variant(currentTrack.metadata, DBusMapType(String::class.java, Variant::class.java)))
             put("Volume", 1.0)
             put("Position", 0)
@@ -66,20 +106,8 @@ class MPRISPlayer : MediaPlayer2, DBusPlayer, DefaultDBus {
             put("CanSeek", true)
             put("CanControl", true)
         }
-
-        // Playlists
-        properties["org.mpris.MediaPlayer2.Playlists"] = PropertyMap {
-            put("PlaylistCount", 0)
-            put("Orderings", PlaylistOrdering.Alphabetical)
-            put("ActivePlaylist", MaybePlaylist())
-        }
-
-        // TrackList
-        properties["org.mpris.MediaPlayer2.TrackList"] = PropertyMap {
-            put("Tracks", arrayOf("/playerfx/songs/untiltheend", "/playerfx/songs/borneo"))
-            put("CanEditTracks", false)
-        }
         println("MPRISPlayer constructed")
+
     }
 
     override fun GetAll(interface_name: String) = properties[interface_name]
@@ -89,23 +117,20 @@ class MPRISPlayer : MediaPlayer2, DBusPlayer, DefaultDBus {
         val new = Variant(value)
         properties[interface_name]!![name] = new
         try {
-            conn.sendSignal(PropertiesChanged("/org/mpris/MediaPlayer2", interface_name, Collections.singletonMap(name, new) as Map<String, Variant<*>>, Collections.emptyList()))
+            connection.sendSignal(PropertiesChanged("/org/mpris/MediaPlayer2", interface_name, Collections.singletonMap(name, new) as Map<String, Variant<*>>, Collections.emptyList()))
         } catch (e: Throwable) {
             e.printStackTrace()
         }
     }
 
     fun updateStatus(status: PlaybackStatus) {
-        this.status = status
+        playbackStatus = status
         updateProperty("org.mpris.MediaPlayer2.Player", "PlaybackStatus", status.name)
     }
 
     override fun PlayPause() {
         println("PlayPause called")
-        if(status == PlaybackStatus.Playing)
-            updateStatus(PlaybackStatus.Paused)
-        else
-            updateStatus(PlaybackStatus.Playing)
+        updateStatus(playbackStatus.playPause())
     }
 
     override fun Play() {
@@ -141,7 +166,7 @@ class MPRISPlayer : MediaPlayer2, DBusPlayer, DefaultDBus {
 
     override fun Quit() {
         println("I'm quitting!")
-        conn.disconnect()
+        connection.disconnect()
     }
 
     override fun OpenUri(uri: String) {

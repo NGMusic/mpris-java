@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Date
 
 plugins {
-    kotlin("jvm") version "1.2.21"
+    kotlin("jvm") version "1.2.30"
     id("com.jfrog.bintray") version "1.8.0"
 }
 
@@ -20,13 +20,13 @@ allprojects {
 
 }
 
-val kotlinVersion: String? by extra {
+val kotlinVersion: String by extra {
     buildscript.configurations["classpath"].resolvedConfiguration.firstLevelModuleDependencies
-            .find { it.moduleName == "org.jetbrains.kotlin.jvm.gradle.plugin" }?.moduleVersion
+            .find { it.moduleName == "org.jetbrains.kotlin.jvm.gradle.plugin" }!!.moduleVersion
 }
 
 dependencies {
-    compile("com.github.hypfvieh", "dbus-java", "2.7.4")
+    compile("com.github.hypfvieh", "dbus-java", "2.7.+")
     compile("org.jetbrains.kotlin", "kotlin-runtime", kotlinVersion)
 }
 

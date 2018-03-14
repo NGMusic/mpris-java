@@ -15,11 +15,12 @@ import org.freedesktop.dbus.UInt32
  * - Orderings		    as (Playlist_Ordering_List)	Read only
  * - ActivePlaylist		(b(oss)) (Maybe_Playlist)	Read only
  * */
+@DBusInterfaceName("org.mpris.MediaPlayer2.Playlists")
 interface Playlists: DBusInterface {
-    class PlaylistChanged(path: String, playlist: Playlist): DBusSignal(path, playlist)
+    class PlaylistChanged(path: DBusPath, playlist: Playlist): DBusSignal(path, playlist)
 
     fun ActivatePlaylist(playlist_id: DBusInterface)
-    fun GetPlaylists(index: UInt32, max_count: UInt32, order: String, reverse_order: Boolean): List<Playlist>
+    fun GetPlaylists(index: Int, max_count: Int, order: String, reverse_order: Boolean): List<Playlist>
 }
 
 class Playlist @JvmOverloads
@@ -40,7 +41,7 @@ class MaybePlaylist(@field:Position(0)
     constructor(playlist: Playlist) : this(true, playlist)
 }
 
-enum class PlaylistOrdering {
+enum class PlaylistOrdering: CharSequence by this.toString() {
     /**Alphabetical ordering by name, ascending.*/
     Alphabetical,
     /**Ordering by creation date, oldest first.*/
@@ -50,5 +51,5 @@ enum class PlaylistOrdering {
     /**Ordering by date of last playback, oldest first.*/
     Played,
     /**A user-defined ordering.*/
-    User
+    User;
 }
