@@ -2,18 +2,8 @@ package xerus.mpris
 
 import org.freedesktop.DBus
 import org.freedesktop.dbus.DBusConnection
-import org.freedesktop.dbus.DBusInterfaceName
-import org.freedesktop.dbus.DBusMemberName
 import org.freedesktop.dbus.Variant
-import org.mpris.MediaPlayer2.LoopStatus
-import org.mpris.MediaPlayer2.MaybePlaylist
-import org.mpris.MediaPlayer2.MediaPlayer2
-import org.mpris.MediaPlayer2.PlaybackStatus
-import org.mpris.MediaPlayer2.Player
-import org.mpris.MediaPlayer2.PlaylistOrdering
-import org.mpris.MediaPlayer2.Playlists
-import org.mpris.MediaPlayer2.TrackId
-import org.mpris.MediaPlayer2.TrackList
+import org.mpris.MediaPlayer2.*
 
 /** Provides a typesafe foundation for implementing an MPRISPlayer.
  *
@@ -21,7 +11,7 @@ import org.mpris.MediaPlayer2.TrackList
  * or delegated by a [DBusProperty]
  *
  * A val represents a Read-only field as declared by MPRIS, it is perfectly valid to implement it as var */
-abstract class AbstractMPRISPlayer: MediaPlayerX, PlayerX, DefaultDBus {
+abstract class AbstractMPRISPlayer : MediaPlayerX, PlayerX, DefaultDBus {
 
     val connection = DBusConnection.getConnection(DBusConnection.SESSION)
     val properties = HashMap<String, MutableMap<String, Variant<*>>>()
@@ -41,41 +31,61 @@ abstract class AbstractMPRISPlayer: MediaPlayerX, PlayerX, DefaultDBus {
 
     /** sends a [DBus.Properties.PropertiesChanged] signal via [connection] */
     override fun propertyChanged(interface_name: String, property_name: String) =
-        super.propertyChanged(interface_name, property_name).also { connection.sendSignal(it) }
+            super.propertyChanged(interface_name, property_name).also { connection.sendSignal(it) }
+
+    override val hasTrackList by DBusConstant(this is TrackList)
 
 }
 
-interface PlayerX: Player {
-    val playbackStatus: PlaybackStatus
-    /** _Optional_ */
-    var loopStatus: LoopStatus
-    var rate: Double
-    /** _Optional_ */
-    var shuffle: Boolean
-    /** Metadata of the current Track
-     * [https://www.freedesktop.org/wiki/Specifications/mpris-spec/metadata/#index2h2] */
-    val metadata: Map<String, Variant<*>>
-    var volume: Double
-    val position: Long
-    val minimumRate: Double
-    val maximumRate: Double
+interface PlayerX : Player {
+    /** Whether the media player may be controlled over this interface.
+     * Setting this to false assumes all properties as Read-only */
+    val canControl: Boolean
     val canGoNext: Boolean
     val canGoPrevious: Boolean
     val canPlay: Boolean
     val canPause: Boolean
     val canSeek: Boolean
-    val canControl: Boolean
+
+    val playbackStatus: PlaybackStatus
+    /** _Optional_ */
+    var loopStatus: LoopStatus
+    /** A value of false indicates that playback is progressing linearly through a playlist,
+     * while true means playback is progressing through a playlist in some other order.
+     *
+     * _Optional_ */
+    var shuffle: Boolean
+    var volume: Double
+    /** The current track position in microseconds, between 0 and the 'mpris:length' metadata entry (see [metadata]. */
+    val position: Long
+    /** Metadata of the current Track.
+     * [https://www.freedesktop.org/wiki/Specifications/mpris-spec/metadata/#index2h2] */
+    val metadata: Map<String, Variant<*>>
+
+    /** The current playback rate.
+     *
+     * The value must fall in the range described by [minimumRate] and [maximumRate], and must not be 0.0 */
+    var rate: Double
+    /** The minimum value which the [rate] property can take. */
+    val minimumRate: Double
+    /** The maximum value which the [rate] property can take. */
+    val maximumRate: Double
+
 }
 
-interface MediaPlayerX: MediaPlayer2 {
-    val canQuit: Boolean
-    /** _Optional_ */
-    var fullscreen: Boolean
-    /** _Optional_ */
-    val canSetFullscreen: Boolean
-    val canRaise: Boolean
+interface MediaPlayerX : MediaPlayer2 {
+    val supportedUriSchemes: Array<String>
+    val supportedMimeTypes: Array<String>
     /** Indicates whether this object implements the org.mpris.MediaPlayer2.TrackList interface. */
     val hasTrackList: Boolean
+
+    val canRaise: Boolean
+    val canQuit: Boolean
+    /** _Optional_ */
+    val canSetFullscreen: Boolean
+
+    /** _Optional_ */
+    var fullscreen: Boolean
     /** A friendly name to identify the media player to users.
      * This should usually match the name found in the [desktopEntry]. */
     val identity: String
@@ -84,17 +94,19 @@ interface MediaPlayerX: MediaPlayer2 {
      *
      * _Optional_ */
     val desktopEntry: String
-    val supportedUriSchemes: Array<String>
-    val supportedMimeTypes: Array<String>
 }
 
-interface TrackListX: TrackList {
-    val tracks: Array<TrackId>
+interface TrackListX : TrackList {
+    /** If false, calling AddTrack or RemoveTrack will have no effect, and may raise a NotSupported error. */
     val canEditTracks: Boolean
+
+    /** An array which contains the identifier of each track in this [TrackList], in order. */
+    val tracks: Array<TrackId>
 }
 
-interface PlaylistsX: Playlists {
-    val playlistCount: Int
+interface PlaylistsX : Playlists {
     val orderings: Array<PlaylistOrdering>
+
+    val playlistCount: Int
     val activePlaylist: MaybePlaylist
 }

@@ -2,8 +2,11 @@
 
 package xerus.mpris
 
+import javafx.beans.value.ObservableValue
 import org.freedesktop.dbus.DBusInterfaceName
 import org.mpris.MediaPlayer2.PlaylistOrdering
+import org.slf4j.LoggerFactory
+import kotlin.properties.ObservableProperty
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -12,16 +15,22 @@ fun main(args: Array<String>) {
 	println(arrayOf(PlaylistOrdering.Alphabetical).variant())
 }
 
-private fun findInterface(clazz: Class<*>, name: String): Class<*>? {
-	if (clazz.declaredMethods.any { it.name.contains(name) })
-		return clazz.interfaces.first()
-	return (clazz.interfaces + clazz.superclass).firstOrNull { findInterface(it, name) != null }
-}
+val logger = LoggerFactory.getLogger("xerus.mpris.properties")
 
-fun
+private fun findInterface(clazz: Class<*>, name: String): Class<*>? =
+	(clazz.interfaces + clazz.superclass).firstOrNull {
+		if(it == null) return@firstOrNull false
+		if (it.declaredMethods.any { it.name.contains(name) }) {
+			logger.debug("Found $it for property $name")
+			return it.interfaces.first()
+		}
+		findInterface(it, name) != null
+	}
 
-class DBusProperty<T : Any>(private val initial: T, private val onSet: ((T) -> Unit)? = null) {
-	
+class DBusProperty<T : Any>(private val initial: T, private val observable: ObservableValue<T>? = null, private val onSet: ((T) -> Unit)? = null) {
+
+	constructor(observable: ObservableValue<T>, onSet: ((T) -> Unit)? = null) : this(observable.value, observable, onSet)
+
 	operator fun provideDelegate(
 			thisRef: AbstractMPRISPlayer,
 			prop: KProperty<*>
@@ -31,16 +40,18 @@ class DBusProperty<T : Any>(private val initial: T, private val onSet: ((T) -> U
 				?: throw RuntimeException("No interface found for Property $name")
 		val interfaceName = (clazz.annotations.find { it is DBusInterfaceName } as? DBusInterfaceName)?.value
 				?: clazz.name
-		println("${prop.name} - $clazz - $interfaceName")
+		logger.debug("Registered Property ${prop.name} for $interfaceName")
 		thisRef.properties.getOrPut(interfaceName) { HashMap() }.put(name, initial.variant())
+		val property = Property<T>(interfaceName, name)
 		if (onSet != null)
 			thisRef.propertyListeners[name] = onSet as ((Any) -> Unit)
-		return Property(interfaceName, name)
+		observable?.addListener { _, _, new -> property.setValue(thisRef, prop, new) }
+		return property
 	}
 	
 }
 
-class DBusConstant<T : Any>(private val initial: T) {
+class DBusConstant<out T : Any>(private val value: T) {
 	
 	operator fun provideDelegate(
 			thisRef: AbstractMPRISPlayer,
@@ -51,9 +62,9 @@ class DBusConstant<T : Any>(private val initial: T) {
 				?: throw RuntimeException("No interface found for Property $name")
 		val interfaceName = (clazz.annotations.find { it is DBusInterfaceName } as? DBusInterfaceName)?.value
 				?: clazz.name
-		println("${prop.name} - $clazz - $interfaceName")
-		thisRef.properties.getOrPut(interfaceName) { HashMap() }.put(name, initial.variant())
-		return Constant(initial)
+		logger.debug("Registered Constant ${prop.name} for $interfaceName")
+		thisRef.properties.getOrPut(interfaceName) { HashMap() }.put(name, value.variant())
+		return Constant(value)
 	}
 }
 
