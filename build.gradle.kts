@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Date
 
 plugins {
-    kotlin("jvm") version "1.2.30"
+    kotlin("jvm") version "1.2.51"
     id("com.jfrog.bintray") version "1.8.0"
 }
 
@@ -16,6 +16,7 @@ allprojects {
 
     repositories {
         jcenter()
+        maven("https://jitpack.io")
     }
 
 }
@@ -26,7 +27,7 @@ val kotlinVersion: String by extra {
 }
 
 dependencies {
-    compile("com.github.hypfvieh", "dbus-java", "2.7.+")
+    compile("com.github.Xerus2000", "dbus-java", "2.7-SNAPSHOT")
     compile("org.jetbrains.kotlin", "kotlin-runtime", kotlinVersion)
 }
 

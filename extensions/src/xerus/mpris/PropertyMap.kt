@@ -1,8 +1,7 @@
 package xerus.mpris
 
 import org.freedesktop.dbus.Variant
-import org.freedesktop.dbus.types.DBusMapType
-import java.util.HashMap
+import java.util.*
 
 class PropertyMap private constructor(initial: PropertyMap.() -> Unit, private val map: HashMap<String, Variant<*>>): Map<String, Variant<*>> by map {
 

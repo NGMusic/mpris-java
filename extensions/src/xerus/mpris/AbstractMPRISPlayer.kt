@@ -13,7 +13,7 @@ import org.mpris.MediaPlayer2.*
  * A val represents a Read-only field as declared by MPRIS, it is perfectly valid to implement it as var */
 abstract class AbstractMPRISPlayer : MediaPlayerX, PlayerX, DefaultDBus {
 
-    val connection = DBusConnection.getConnection(DBusConnection.SESSION)
+    val connection: DBusConnection = DBusConnection.getConnection(DBusConnection.SESSION)
     val properties = HashMap<String, MutableMap<String, Variant<*>>>()
     internal val propertyListeners = HashMap<String, (Any) -> Unit>()
 
