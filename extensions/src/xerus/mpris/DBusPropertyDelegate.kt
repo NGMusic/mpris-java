@@ -12,15 +12,21 @@ import kotlin.reflect.KProperty
 
 val logger = LoggerFactory.getLogger("xerus.mpris.properties")
 
-private fun findInterface(clazz: Class<*>, name: String): Class<*>? =
-	(clazz.interfaces + clazz.superclass).firstOrNull {
-		if(it == null) return@firstOrNull false
-		if(it.declaredMethods.any { it.name.contains(name) }) {
-			logger.trace("Found $it for property $name")
-			return it.interfaces.first()
-		}
-		findInterface(it, name) != null
+private fun findInterface(clazz: Class<*>, name: String): Class<*>? {
+	for(c in (clazz.interfaces + clazz.superclass)) {
+		if(c == null)
+			continue
+		return findInterface(c, name) ?: continue
 	}
+	if(clazz.declaredMethods.any { it.name.contains(name) }) {
+		logger.debug("Found $clazz for property $name")
+		return clazz
+	}
+	return null
+}
+
+private val Class<*>.dbusInterfaceName: String
+	get() = annotations.filterIsInstance<DBusInterfaceName>().firstOrNull()?.value ?: name
 
 class DBusProperty<T: Any>(private val initial: T, private val observable: ObservableValue<T>? = null, private val onSet: ((T) -> Unit)? = null) {
 	
@@ -33,9 +39,8 @@ class DBusProperty<T: Any>(private val initial: T, private val observable: Obser
 		val name = prop.name.capitalize()
 		val clazz = findInterface(thisRef::class.java, name)
 			?: throw RuntimeException("No interface found for Property $name")
-		val interfaceName = (clazz.annotations.find { it is DBusInterfaceName } as? DBusInterfaceName)?.value
-			?: clazz.name
-		logger.trace("Registered Property ${prop.name} for $interfaceName")
+		val interfaceName = clazz.dbusInterfaceName
+		logger.debug("Registered Property $name for $interfaceName")
 		thisRef.properties.getOrPut(interfaceName) { HashMap() }[name] = initial.variant()
 		val property = Property<T>(interfaceName, name)
 		if(onSet != null)
@@ -63,9 +68,8 @@ class DBusMapProperty<K: Any, V: Any>(
 		val name = prop.name.capitalize()
 		val clazz = findInterface(thisRef::class.java, name)
 			?: throw RuntimeException("No interface found for Property $name")
-		val interfaceName = (clazz.annotations.find { it is DBusInterfaceName } as? DBusInterfaceName)?.value
-			?: clazz.name
-		logger.trace("Registered Property ${prop.name} for $interfaceName")
+		val interfaceName = clazz.dbusInterfaceName
+		logger.debug("Registered Map Property $name for $interfaceName")
 		thisRef.properties.getOrPut(interfaceName) { HashMap() }[name] = initial.variant(keyClass, valueClass)
 		val property = Property<Map<K, V>>(interfaceName, name)
 		if(onSet != null)
@@ -85,9 +89,8 @@ class DBusConstant<out T: Any>(private val value: T) {
 		val name = prop.name.capitalize()
 		val clazz = findInterface(thisRef::class.java, name)
 			?: throw RuntimeException("No interface found for Property $name")
-		val interfaceName = (clazz.annotations.find { it is DBusInterfaceName } as? DBusInterfaceName)?.value
-			?: clazz.name
-		logger.trace("Registered Constant ${prop.name} for $interfaceName")
+		val interfaceName = clazz.dbusInterfaceName
+		logger.debug("Registered Constant $name for $interfaceName")
 		thisRef.properties.getOrPut(interfaceName) { HashMap() }.put(name, value.variant())
 		return Constant(value)
 	}
@@ -96,14 +99,8 @@ class DBusConstant<out T: Any>(private val value: T) {
 private class Property<T: Any>(private val interfaceName: String, private val name: String): ReadWriteProperty<AbstractMPRISPlayer, T> {
 	
 	override fun setValue(thisRef: AbstractMPRISPlayer, property: KProperty<*>, value: T) {
-		println("setting $name in $interfaceName to $value")
-		try {
-			if(thisRef.properties.getValue(interfaceName).put(name, value.variant())?.value != value)
-				thisRef.connection.sendMessage(thisRef.propertyChanged(interfaceName, name))
-		} catch(t: Throwable) {
-			t.printStackTrace()
-		}
-		println("set $value")
+		if(thisRef.properties.getValue(interfaceName).put(name, value.variant())?.value != value)
+			thisRef.connection.sendMessage(thisRef.propertyChanged(interfaceName, name))
 	}
 	
 	override fun getValue(thisRef: AbstractMPRISPlayer, property: KProperty<*>) =

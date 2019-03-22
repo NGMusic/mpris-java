@@ -27,7 +27,7 @@ class PropertyMap private constructor(private val map: MutableMap<String, Varian
 	}
 	
 	private fun refresh(key: String, cal: (() -> Any?)? = mapCallable[key]): Any? {
-		val value = cal?.invoke()
+		val value = (cal ?: return null).invoke()
 		value?.variant()?.let { map[key] = it } ?: map.remove(key)
 		return value
 	}
@@ -46,6 +46,10 @@ class PropertyMap private constructor(private val map: MutableMap<String, Varian
 	fun put(key: String, cal: () -> Any?) {
 		mapCallable[key] = cal
 		refresh(key)
+	}
+	
+	override fun toString(): String {
+		return "PropertyMap$map"
 	}
 	
 }

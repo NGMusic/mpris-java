@@ -1,6 +1,7 @@
 package xerus.mpris
 
 import org.freedesktop.DBus
+import org.freedesktop.dbus.annotations.DBusInterfaceName
 import org.freedesktop.dbus.connections.impl.DBusConnection
 import org.freedesktop.dbus.types.Variant
 import org.mpris.MediaPlayer2.*
@@ -25,12 +26,10 @@ abstract class AbstractMPRISPlayer: MediaPlayerX, PlayerX, DefaultDBus {
 		propertyListeners[property_name]?.invoke(value)
 	}
 	
-	/** Requests the bus name for this player and exports it, so that it can be called from DBus.
-	 *
-	 * Blocks the current Thread as long as the object is exported to DBus. */
+	/** Requests the bus name for this player and exports it, so that it can be called from DBus. */
 	fun exportAs(playerName: String) {
-		connection.requestBusName("org.mpris.MediaPlayer2.$playerName")
 		connection.exportObject("/org/mpris/MediaPlayer2", this)
+		connection.requestBusName("org.mpris.MediaPlayer2.$playerName")
 	}
 	
 	/** sends a [DBus.Properties.PropertiesChanged] signal via [connection] */
@@ -41,6 +40,7 @@ abstract class AbstractMPRISPlayer: MediaPlayerX, PlayerX, DefaultDBus {
 	
 }
 
+@DBusInterfaceName("org.mpris.MediaPlayer2.Player")
 interface PlayerX: Player {
 	/** Whether the media player may be controlled over this interface.
 	 * Setting this to false assumes all properties as Read-only */
@@ -78,6 +78,7 @@ interface PlayerX: Player {
 }
 
 /** Extension of the [MediaPlayer2] interface which adds its properties. */
+@DBusInterfaceName("org.mpris.MediaPlayer2")
 interface MediaPlayerX: MediaPlayer2 {
 	val supportedUriSchemes: Array<String>
 	val supportedMimeTypes: Array<String>

@@ -28,9 +28,13 @@ interface DefaultDBus: Properties {
 	
 	override fun isRemote() = false
 	
-	@Suppress("UNCHECKED_CAST")
-	override fun <A: Any> Get(interface_name: String, property_name: String) =
-		GetAll(interface_name)[property_name]?.value as A
+	override fun <A: Any> Get(interface_name: String, property_name: String): A {
+		val value = GetAll(interface_name)[property_name]
+			?: throw InvalidParameterException("Property $property_name for $interface_name not found")
+		logger.debug("Request of $property_name from $interface_name yielded $value")
+		@Suppress("UNCHECKED_CAST")
+		return value as A
+	}
 	
 	override fun <A: Any> Set(interface_name: String, property_name: String, value: A) {
 		GetAll(interface_name)[property_name] = value.variant()
@@ -39,6 +43,6 @@ interface DefaultDBus: Properties {
 	
 	/** returns a new [Properties.PropertiesChanged] signal */
 	fun propertyChanged(interface_name: String, property_name: String) =
-		Properties.PropertiesChanged(objectPath, interface_name, Collections.singletonMap<String, Variant<*>>(property_name, Get<Any>(interface_name, property_name).variant()), null)
+		Properties.PropertiesChanged(objectPath, interface_name, Collections.singletonMap<String, Variant<*>>(property_name, Get<Any>(interface_name, property_name).variant()), Collections.emptyList())
 	
 }
