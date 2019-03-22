@@ -17,6 +17,6 @@ allprojects {
 }
 
 dependencies {
-	compile("com.github.hypfvieh", "dbus-java", "2.7.5")
+	compile("com.github.hypfvieh", "dbus-java", "3.0.2")
 	compile(kotlin("stdlib"))
 }

@@ -1,6 +1,6 @@
 package xerus.mpris
 
-import org.freedesktop.dbus.Variant
+import org.freedesktop.dbus.types.Variant
 
 /** Represents a Track with Metadata.
  * This is not an actual DBus-object, but rather a convenience wrapper around the metadata. */

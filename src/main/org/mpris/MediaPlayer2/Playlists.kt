@@ -2,11 +2,11 @@
 
 package org.mpris.MediaPlayer2
 
-import org.freedesktop.dbus.DBusInterface
-import org.freedesktop.dbus.DBusInterfaceName
-import org.freedesktop.dbus.DBusSignal
-import org.freedesktop.dbus.Position
 import org.freedesktop.dbus.Struct
+import org.freedesktop.dbus.annotations.DBusInterfaceName
+import org.freedesktop.dbus.annotations.Position
+import org.freedesktop.dbus.interfaces.DBusInterface
+import org.freedesktop.dbus.messages.DBusSignal
 
 typealias PlaylistId = DBusPath
 

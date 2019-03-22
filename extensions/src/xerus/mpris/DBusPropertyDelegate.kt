@@ -3,7 +3,7 @@
 package xerus.mpris
 
 import javafx.beans.value.ObservableValue
-import org.freedesktop.dbus.DBusInterfaceName
+import org.freedesktop.dbus.annotations.DBusInterfaceName
 import org.slf4j.LoggerFactory
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
@@ -99,7 +99,7 @@ private class Property<T: Any>(private val interfaceName: String, private val na
 		println("setting $name in $interfaceName to $value")
 		try {
 			if(thisRef.properties.getValue(interfaceName).put(name, value.variant())?.value != value)
-				thisRef.connection.sendSignal(thisRef.propertyChanged(interfaceName, name))
+				thisRef.connection.sendMessage(thisRef.propertyChanged(interfaceName, name))
 		} catch(t: Throwable) {
 			t.printStackTrace()
 		}

@@ -1,7 +1,7 @@
 package org.mpris.MediaPlayer2
 
-import org.freedesktop.dbus.DBusInterface
-import org.freedesktop.dbus.DBusInterfaceName
+import org.freedesktop.dbus.annotations.DBusInterfaceName
+import org.freedesktop.dbus.interfaces.DBusInterface
 
 /** [https://specifications.freedesktop.org/mpris-spec/latest/Media_Player.html]
  *

@@ -1,6 +1,6 @@
 package xerus.mpris
 
-import org.freedesktop.dbus.Variant
+import org.freedesktop.dbus.types.Variant
 import java.util.*
 
 class PropertyMap private constructor(private val map: MutableMap<String, Variant<*>>): MutableMap<String, Variant<*>> by map {

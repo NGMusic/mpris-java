@@ -2,9 +2,9 @@
 
 package org.mpris.MediaPlayer2
 
-import org.freedesktop.dbus.DBusInterface
-import org.freedesktop.dbus.DBusInterfaceName
-import org.freedesktop.dbus.DBusSignal
+import org.freedesktop.dbus.annotations.DBusInterfaceName
+import org.freedesktop.dbus.interfaces.DBusInterface
+import org.freedesktop.dbus.messages.DBusSignal
 
 /** [https://specifications.freedesktop.org/mpris-spec/latest/Player_Interface.html]
  *

@@ -1,8 +1,8 @@
 package xerus.mpris
 
 import org.freedesktop.DBus
-import org.freedesktop.dbus.DBusConnection
-import org.freedesktop.dbus.Variant
+import org.freedesktop.dbus.connections.impl.DBusConnection
+import org.freedesktop.dbus.types.Variant
 import org.mpris.MediaPlayer2.*
 
 /** Provides a typesafe foundation for implementing an MPRISPlayer.
@@ -14,7 +14,7 @@ import org.mpris.MediaPlayer2.*
  * */
 abstract class AbstractMPRISPlayer: MediaPlayerX, PlayerX, DefaultDBus {
 	
-	val connection: DBusConnection = DBusConnection.getConnection(DBusConnection.SESSION)
+	val connection: DBusConnection = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION)
 	val properties = HashMap<String, MutableMap<String, Variant<*>>>()
 	internal val propertyListeners = HashMap<String, (Any) -> Unit>()
 	
@@ -35,7 +35,7 @@ abstract class AbstractMPRISPlayer: MediaPlayerX, PlayerX, DefaultDBus {
 	
 	/** sends a [DBus.Properties.PropertiesChanged] signal via [connection] */
 	override fun propertyChanged(interface_name: String, property_name: String) =
-		super.propertyChanged(interface_name, property_name).also { connection.sendSignal(it) }
+		super.propertyChanged(interface_name, property_name).also { connection.sendMessage(it) }
 	
 	override val hasTrackList by DBusConstant(this is TrackList)
 	

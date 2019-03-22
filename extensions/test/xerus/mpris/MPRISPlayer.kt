@@ -1,9 +1,8 @@
 package xerus.mpris
 
-import org.freedesktop.DBus
-import org.freedesktop.DBus.Properties.PropertiesChanged
-import org.freedesktop.dbus.Variant
+import org.freedesktop.dbus.interfaces.Properties
 import org.freedesktop.dbus.types.DBusMapType
+import org.freedesktop.dbus.types.Variant
 import org.mpris.MediaPlayer2.LoopStatus
 import org.mpris.MediaPlayer2.MediaPlayer2
 import org.mpris.MediaPlayer2.PlaybackStatus
@@ -19,7 +18,7 @@ fun main() {
 	MPRISPlayer().exportAs(playerName)
 }
 
-class MPRISPlayer: AbstractMPRISPlayer(), MediaPlayer2, Player, DBus.Properties {
+class MPRISPlayer: AbstractMPRISPlayer(), MediaPlayer2, Player, Properties {
 	
 	override var playbackStatus by DBusProperty(PlaybackStatus.Stopped)
 	override var loopStatus: LoopStatus = LoopStatus.None
@@ -116,7 +115,7 @@ class MPRISPlayer: AbstractMPRISPlayer(), MediaPlayer2, Player, DBus.Properties 
 		val new = Variant(value)
 		properties[interface_name]!![name] = new
 		try {
-			connection.sendSignal(PropertiesChanged("/org/mpris/MediaPlayer2", interface_name, Collections.singletonMap(name, new) as Map<String, Variant<*>>, Collections.emptyList()))
+			connection.sendMessage(Properties.PropertiesChanged("/org/mpris/MediaPlayer2", interface_name, Collections.singletonMap(name, new) as Map<String, Variant<*>>, Collections.emptyList()))
 		} catch(e: Throwable) {
 			e.printStackTrace()
 		}

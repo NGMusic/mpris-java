@@ -1,11 +1,12 @@
 package xerus.mpris
 
-import org.freedesktop.DBus.Properties
-import org.freedesktop.dbus.Variant
+import org.freedesktop.dbus.interfaces.Properties
 import org.freedesktop.dbus.types.DBusMapType
+import org.freedesktop.dbus.types.Variant
 import java.security.InvalidParameterException
 import java.util.*
 import kotlin.reflect.KClass
+
 
 fun Any.variant(): Variant<*> {
 	if(this is Variant<*>)
