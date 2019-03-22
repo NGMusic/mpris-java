@@ -7,7 +7,7 @@ sourceSets.main.get().java.srcDir("src")
 sourceSets.main.get().java.srcDir("test")
 
 application {
-	mainClassName = "xerus.mpris.DBusPropertyDelegateKt"
+	mainClassName = "xerus.mpris.MPRISPlayerKt"
 }
 
 dependencies {

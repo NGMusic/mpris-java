@@ -25,6 +25,9 @@ abstract class AbstractMPRISPlayer: MediaPlayerX, PlayerX, DefaultDBus {
 		propertyListeners[property_name]?.invoke(value)
 	}
 	
+	/** Requests the bus name for this player and exports it, so that it can be called from DBus.
+	 *
+	 * Blocks the current Thread as long as the object is exported to DBus. */
 	fun exportAs(playerName: String) {
 		connection.requestBusName("org.mpris.MediaPlayer2.$playerName")
 		connection.exportObject("/org/mpris/MediaPlayer2", this)
@@ -74,6 +77,7 @@ interface PlayerX: Player {
 	
 }
 
+/** Extension of the [MediaPlayer2] interface which adds its properties. */
 interface MediaPlayerX: MediaPlayer2 {
 	val supportedUriSchemes: Array<String>
 	val supportedMimeTypes: Array<String>

@@ -3,25 +3,25 @@ package xerus.mpris
 import org.freedesktop.dbus.Variant
 import java.util.*
 
-class PropertyMap private constructor(initial: PropertyMap.() -> Unit, private val map: HashMap<String, Variant<*>>): Map<String, Variant<*>> by map {
+class PropertyMap private constructor(private val map: MutableMap<String, Variant<*>>): MutableMap<String, Variant<*>> by map {
 	
-	@JvmOverloads
-	constructor(initial: PropertyMap.() -> Unit = {}): this(initial, HashMap())
+	constructor(initializer: PropertyMap.() -> Unit): this(HashMap()) {
+		initializer(this)
+	}
 	
-	override val entries: Set<Map.Entry<String, Variant<*>>>
+	constructor(vararg elements: Pair<String, Variant<*>>): this(mutableMapOf(*elements))
+	
+	override val entries: MutableSet<MutableMap.MutableEntry<String, Variant<*>>>
 		get() = refresh().entries
-	override val values: Collection<Variant<*>>
+	override val values: MutableCollection<Variant<*>>
 		get() = refresh().values
 	
 	override fun containsValue(value: Variant<*>) = refresh().containsValue(value)
 	
 	private val mapCallable = HashMap<String, () -> Any?>()
 	
-	init {
-		initial(this)
-	}
 	
-	fun refresh(): Map<String, Variant<*>> {
+	fun refresh(): MutableMap<String, Variant<*>> {
 		mapCallable.forEach { key, cal -> refresh(key, cal) }
 		return map
 	}

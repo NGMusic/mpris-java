@@ -4,15 +4,11 @@ package xerus.mpris
 
 import javafx.beans.value.ObservableValue
 import org.freedesktop.dbus.DBusInterfaceName
-import org.mpris.MediaPlayer2.PlaylistOrdering
 import org.slf4j.LoggerFactory
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
-
-fun main(args: Array<String>) {
-	println(arrayOf(PlaylistOrdering.Alphabetical).variant())
-}
 
 val logger = LoggerFactory.getLogger("xerus.mpris.properties")
 
@@ -50,9 +46,15 @@ class DBusProperty<T: Any>(private val initial: T, private val observable: Obser
 	
 }
 
-class DBusMapProperty<K, V>(private val initial: Map<K, V> = HashMap<K, V>(), private val observable: ObservableValue<Map<K, V>>? = null, private val onSet: ((Map<K, V>) -> Unit)? = null) {
+class DBusMapProperty<K: Any, V: Any>(
+	private val keyClass: KClass<K>,
+	private val valueClass: KClass<V>,
+	private val initial: Map<K, V> = HashMap(),
+	private val observable: ObservableValue<Map<K, V>>? = null,
+	private val onSet: ((Map<K, V>) -> Unit)? = null) {
 	
-	constructor(observable: ObservableValue<Map<K, V>>, onSet: ((Map<K, V>) -> Unit)? = null): this(observable.value, observable, onSet)
+	constructor(keyClass: KClass<K>, valueClass: KClass<V>, observable: ObservableValue<Map<K, V>>, onSet: ((Map<K, V>) -> Unit)? = null):
+		this(keyClass, valueClass, observable.value, observable, onSet)
 	
 	operator fun provideDelegate(
 		thisRef: AbstractMPRISPlayer,
@@ -64,7 +66,7 @@ class DBusMapProperty<K, V>(private val initial: Map<K, V> = HashMap<K, V>(), pr
 		val interfaceName = (clazz.annotations.find { it is DBusInterfaceName } as? DBusInterfaceName)?.value
 			?: clazz.name
 		logger.trace("Registered Property ${prop.name} for $interfaceName")
-		//thisRef.properties.getOrPut(interfaceName) { HashMap() }[name] = initial.variant()
+		thisRef.properties.getOrPut(interfaceName) { HashMap() }[name] = initial.variant(keyClass, valueClass)
 		val property = Property<Map<K, V>>(interfaceName, name)
 		if(onSet != null)
 			thisRef.propertyListeners[name] = onSet as ((Any) -> Unit)
@@ -94,8 +96,14 @@ class DBusConstant<out T: Any>(private val value: T) {
 private class Property<T: Any>(private val interfaceName: String, private val name: String): ReadWriteProperty<AbstractMPRISPlayer, T> {
 	
 	override fun setValue(thisRef: AbstractMPRISPlayer, property: KProperty<*>, value: T) {
-		if(thisRef.properties.getValue(interfaceName).put(name, value.variant())?.value != value)
-			thisRef.connection.sendSignal(thisRef.propertyChanged(interfaceName, name))
+		println("setting $name in $interfaceName to $value")
+		try {
+			if(thisRef.properties.getValue(interfaceName).put(name, value.variant())?.value != value)
+				thisRef.connection.sendSignal(thisRef.propertyChanged(interfaceName, name))
+		} catch(t: Throwable) {
+			t.printStackTrace()
+		}
+		println("set $value")
 	}
 	
 	override fun getValue(thisRef: AbstractMPRISPlayer, property: KProperty<*>) =

@@ -1,30 +1,36 @@
 package xerus.mpris
 
+import org.freedesktop.DBus
 import org.freedesktop.DBus.Properties.PropertiesChanged
 import org.freedesktop.dbus.Variant
+import org.freedesktop.dbus.types.DBusMapType
 import org.mpris.MediaPlayer2.LoopStatus
+import org.mpris.MediaPlayer2.MediaPlayer2
 import org.mpris.MediaPlayer2.PlaybackStatus
+import org.mpris.MediaPlayer2.Player
+import java.io.File
 import java.util.*
 
-operator fun <K, V> HashMap<K, V>.set(k: K, value: V) = put(k, value)
+val playerName = "TestPlayer"
+val cover = "file://" + File("extensions/test/cover.png").absoluteFile.toString()
 
-fun main(args: Array<String>) {
+fun main() {
 	println("Connecting to DBus")
-	MPRISPlayer().exportAs("TestPlayer")
+	MPRISPlayer().exportAs(playerName)
 }
 
-class MPRISPlayer: AbstractMPRISPlayer() {
+class MPRISPlayer: AbstractMPRISPlayer(), MediaPlayer2, Player, DBus.Properties {
 	
 	override var playbackStatus by DBusProperty(PlaybackStatus.Stopped)
 	override var loopStatus: LoopStatus = LoopStatus.None
 	override var rate by DBusProperty(1.0)
 	override var shuffle: Boolean = false
-	override val metadata by DBusMapProperty(PropertyMap {
-		put("mpris:trackid", "/playerfx/songs/untiltheend")
-		put("mpris:length", 10_000000)
-		put("mpris:artUrl", "file:///home/janek/daten/musik/Monstercat/Aero Chord - Love & Hate EP/cover.jpeg")
+	override val metadata by DBusMapProperty(String::class, Variant::class, PropertyMap {
+		put("mpris:trackid", "/playerfx/songs/monstercat")
+		put("mpris:length", 10_000_000)
+		put("mpris:artUrl", cover)
 		put("xesam:artist", arrayOf("Aero Chord", "Fractal"))
-		put("xesam:title", "Until The End (feat. Q'AILA)")
+		put("xesam:title", "Monstercat")
 	})
 	override var volume: Double
 		get() = TODO("not implemented")
@@ -71,7 +77,6 @@ class MPRISPlayer: AbstractMPRISPlayer() {
 	
 	init {
 		println("Constructing MPRISPlayer")
-		/*
 		properties["org.mpris.MediaPlayer2"] = PropertyMap {
 			put("CanSeek", true)
 			put("CanQuit", true)
@@ -82,7 +87,7 @@ class MPRISPlayer: AbstractMPRISPlayer() {
 			put("SupportedMimeTypes", arrayOf("audio/mpeg", "audio/mp4"))
 			//put("DesktopEntry")
 		}
-
+		
 		properties["org.mpris.MediaPlayer2.Player"] = PropertyMap {
 			put("PlaybackStatus", PlaybackStatus.Stopped)
 			put("LoopStatus", LoopStatus.None)
@@ -100,7 +105,6 @@ class MPRISPlayer: AbstractMPRISPlayer() {
 			put("CanSeek", true)
 			put("CanControl", true)
 		}
-		*/
 		println("MPRISPlayer constructed")
 		
 	}
@@ -119,8 +123,10 @@ class MPRISPlayer: AbstractMPRISPlayer() {
 	}
 	
 	fun updateStatus(status: PlaybackStatus) {
+		println(status)
 		playbackStatus = status
-		updateProperty("org.mpris.MediaPlayer2.Player", "PlaybackStatus", status.name)
+		println(status)
+		updateProperty("org.mpris.MediaPlayer2.$playerName", "PlaybackStatus", status.name)
 	}
 	
 	override fun PlayPause() {
