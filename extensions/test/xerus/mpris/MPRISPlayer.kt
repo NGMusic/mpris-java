@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
 	MPRISPlayer().exportAs("TestPlayer")
 }
 
-class MPRISPlayer : AbstractMPRISPlayer() {
+class MPRISPlayer: AbstractMPRISPlayer() {
 	
 	override var playbackStatus by DBusProperty(PlaybackStatus.Stopped)
 	override var loopStatus: LoopStatus = LoopStatus.None
@@ -107,13 +107,13 @@ class MPRISPlayer : AbstractMPRISPlayer() {
 	
 	override fun GetAll(interface_name: String) = properties[interface_name]
 	
-	fun <A : Any> updateProperty(interface_name: String, name: String, value: A) {
+	fun <A: Any> updateProperty(interface_name: String, name: String, value: A) {
 		println("Updating $name of $interface_name to $value")
 		val new = Variant(value)
 		properties[interface_name]!![name] = new
 		try {
 			connection.sendSignal(PropertiesChanged("/org/mpris/MediaPlayer2", interface_name, Collections.singletonMap(name, new) as Map<String, Variant<*>>, Collections.emptyList()))
-		} catch (e: Throwable) {
+		} catch(e: Throwable) {
 			e.printStackTrace()
 		}
 	}
