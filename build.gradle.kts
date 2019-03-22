@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-	kotlin("jvm") version "1.2.51"
+	kotlin("jvm") version "1.3.21"
 }
 
-java.sourceSets["main"].java.srcDir("src")
+sourceSets.main.get().java.srcDir("src")
 
 allprojects {
 	group = "xerus.mpris"
@@ -17,14 +17,9 @@ allprojects {
 	
 }
 
-val kotlinVersion: String by extra {
-	buildscript.configurations["classpath"].resolvedConfiguration.firstLevelModuleDependencies
-			.find { it.moduleName == "org.jetbrains.kotlin.jvm.gradle.plugin" }!!.moduleVersion
-}
-
 dependencies {
-	compile("com.github.Xerus2000", "dbus-java", "2.7-SNAPSHOT")
-	compile(kotlin("runtime"))
+	compile("com.github.hypfvieh", "dbus-java", "2.7.5")
+	compile(kotlin("stdlib"))
 }
 
 tasks {
