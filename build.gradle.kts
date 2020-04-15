@@ -1,5 +1,5 @@
 plugins {
-	kotlin("jvm") version "1.3.21"
+	kotlin("jvm") version "1.3.71"
 }
 
 sourceSets.main.get().java.srcDir("src/main")
@@ -17,6 +17,6 @@ allprojects {
 }
 
 dependencies {
-	compile("com.github.hypfvieh", "dbus-java", "3.0.2")
-	compile(kotlin("stdlib"))
+	api("com.github.hypfvieh", "dbus-java", "3.0.2")
+	api(kotlin("stdlib"))
 }

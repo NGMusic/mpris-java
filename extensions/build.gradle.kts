@@ -14,10 +14,9 @@ sourceSets {
 }
 
 dependencies {
-	compile(rootProject)
-	compile(kotlin("stdlib"))
-	compile("org.slf4j", "slf4j-api", "1.7.25")
-	testImplementation("com.github.xerus2000.util", "javafx", "24c9961a22c68df9345dd9d4e6d19e3d6a4d2f0a")
+	implementation(rootProject)
+	implementation("org.slf4j", "slf4j-api", "1.7.25")
+	testImplementation("com.github.xerus2000.util", "javafx", "2f67fc22d736818f53a04716814694dbb2c2fd40")
 	testImplementation("org.slf4j", "slf4j-simple", "1.7.25")
 }
 
